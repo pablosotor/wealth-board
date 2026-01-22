@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf 8">
+    <meta name="viewport" content="width=device width, initial scale=1">
+    <title>Wealth board</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: #121b2f;
+        --text: #e9eefc;
+        --muted: #b8c2e0;
+        --accent: #7aa2ff;
+        --warn: #ffd57a;
+        --ok: #7dffb2;
+        --bad: #ff7d7d;
+        --line: rgba(255,255,255,0.12);
+      }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font family: Arial, Helvetica, serif;
+        background: radial gradient(circle at 20% 10%, rgba(122,162,255,0.18), transparent 40%),
+                    radial gradient(circle at 80% 0%, rgba(125,255,178,0.10), transparent 40%),
+                    var(--bg);
+        color: var(--text);
+      }
+      .wrap { max width: 1100px; margin: 0 auto; padding: 16px; }
+      .top {
+        display: grid;
+        grid template columns: 1fr;
+        gap: 12px;
+        margin bottom: 12px;
+      }
+      .title {
+        padding: 14px 14px;
+        background: linear gradient(135deg, rgba(122,162,255,0.18), rgba(255,255,255,0.03));
+        border: 1px solid var(--line);
+        border radius: 14px;
+      }
+      .title h1 { margin: 0; font size: 18px; letter spacing: 0.2px; }
+      .title p { margin: 6px 0 0; color: var(--muted); font size: 13px; line height: 1.35; }
+
+      .grid {
+        display: grid;
+        grid template columns: 1fr;
+        gap: 12px;
+      }
+      @media (min width: 900px) {
+        .grid { grid template columns: 420px 1fr; }
+      }
+
+      .card {
+        background: rgba(18,27,47,0.75);
+        border: 1px solid var(--line);
+        border radius: 14px;
+        padding: 12px;
+        backdrop filter: blur(6px);
+      }
+      .card h2 { margin: 0 0 10px; font size: 14px; color: var(--muted); }
+      .row {
+        display: grid;
+        grid template columns: 1fr 140px;
+        gap: 10px;
+        align items: center;
+        margin bottom: 8px;
+      }
+      .row label { font size: 13px; color: var(--text); }
+      .row input {
+        width: 100%;
+        box sizing: border box;
+        padding: 8px 10px;
+        border radius: 10px;
+        border: 1px solid var(--line);
+        background: rgba(0,0,0,0.2);
+        color: var(--text);
+        font size: 13px;
+      }
+      .row small { grid column: 1 / span 2; color: var(--muted); font size: 12px; margin top: 2px; }
+
+      .kpis {
+        display: grid;
+        grid template columns: 1fr 1fr;
+        gap: 10px;
+        margin top: 10px;
+      }
+      .kpi {
+        padding: 10px;
+        border radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(0,0,0,0.18);
+      }
+      .kpi .name { color: var(--muted); font size: 12px; }
+      .kpi .val { margin top: 6px; font size: 16px; font weight: 700; }
+
+      .status {
+        margin top: 10px;
+        padding: 10px;
+        border radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(0,0,0,0.18);
+        font size: 13px;
+        color: var(--muted);
+      }
+
+      canvas { width: 100%; height: 260px; }
+      .mini { margin top: 10px; }
+      table {
+        width: 100%;
+        border collapse: collapse;
+        font size: 12px;
+      }
+      th, td {
+        border bottom: 1px solid rgba(255,255,255,0.08);
+        padding: 8px 6px;
+        text align: right;
+        white space: nowrap;
+      }
+      th:first child, td:first child { text align: left; }
+      .tag { font size: 11px; padding: 2px 8px; border radius: 999px; display: inline block; border: 1px solid var(--line); }
+      .tag.warn { color: #1b1400; background: var(--warn); }
+      .tag.ok { color: #00160a; background: var(--ok); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <div class="title">
+          <h1>Wealth board</h1>
+          <p>Adjust inputs, see rent saving months, rent to mortgage switch, rental income start, and a freedom line based on passive income covering living costs plus housing.</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Inputs</h2>
+
+          <div class="row">
+            <label for="startDate">Start date</label>
+            <input id="startDate" type="date" value="2026 01 01">
+          </div>
+
+          <div class="row">
+            <label for="months">Months to project</label>
+            <input id="months" type="number" value="180" min="12" max="600">
+          </div>
+
+          <div class="row">
+            <label for="netSalary">Net salary monthly year one</label>
+            <input id="netSalary" type="number" value="38000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="salaryGrowth">Salary growth yearly</label>
+            <input id="salaryGrowth" type="number" value="0.03" step="0.005">
+            <small>Example 0.03 means 3 percent per year.</small>
+          </div>
+
+          <div class="row">
+            <label for="livingCost">Living costs monthly year one</label>
+            <input id="livingCost" type="number" value="9000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="inflation">Living cost inflation yearly</label>
+            <input id="inflation" type="number" value="0.05" step="0.005">
+          </div>
+
+          <div class="row">
+            <label for="rent">Rent monthly</label>
+            <input id="rent" type="number" value="12300" step="100">
+          </div>
+
+          <div class="row">
+            <label for="rentSaveStart">Rent saving start</label>
+            <input id="rentSaveStart" type="date" value="2026 02 01">
+          </div>
+
+          <div class="row">
+            <label for="rentSaveEnd">Rent saving end</label>
+            <input id="rentSaveEnd" type="date" value="2026 06 01">
+          </div>
+
+          <div class="row">
+            <label for="p1Date">Property one date</label>
+            <input id="p1Date" type="date" value="2027 01 01">
+          </div>
+
+          <div class="row">
+            <label for="mort1">Mortgage one monthly</label>
+            <input id="mort1" type="number" value="16000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="p2Date">Property two date</label>
+            <input id="p2Date" type="date" value="2030 01 01">
+          </div>
+
+          <div class="row">
+            <label for="rentIncome">Rental income from property one</label>
+            <input id="rentIncome" type="number" value="14000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="askStart">ASK start</label>
+            <input id="askStart" type="number" value="7000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="askContrib">ASK monthly contribution</label>
+            <input id="askContrib" type="number" value="4500" step="100">
+          </div>
+
+          <div class="row">
+            <label for="askCap">ASK cap</label>
+            <input id="askCap" type="number" value="174200" step="100">
+          </div>
+
+          <div class="row">
+            <label for="safetyStart">Safety start</label>
+            <input id="safetyStart" type="number" value="15000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="safetyContrib">Safety monthly</label>
+            <input id="safetyContrib" type="number" value="5000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="safetyCap">Safety cap</label>
+            <input id="safetyCap" type="number" value="100000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="juneStart">JUNE balance</label>
+            <input id="juneStart" type="number" value="45000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="propFundMonthly">Property fund monthly</label>
+            <input id="propFundMonthly" type="number" value="5000" step="100">
+          </div>
+
+          <div class="row">
+            <label for="swr">Safe withdrawal rate</label>
+            <input id="swr" type="number" value="0.04" step="0.005">
+            <small>Used to compute passive income from ASK plus JUNE.</small>
+          </div>
+
+          <button id="runBtn" style="width:100%; padding:10px; border radius:12px; border:1px solid rgba(255,255,255,0.18); background:rgba(122,162,255,0.22); color:var(--text); font weight:700; font size:13px;">Recalculate</button>
+
+          <div class="kpis" id="kpis"></div>
+          <div class="status" id="status"></div>
+        </div>
+
+        <div class="card">
+          <h2>Charts</h2>
+          <canvas id="chartNet"></canvas>
+          <div class="mini"></div>
+          <canvas id="chartFreedom"></canvas>
+
+          <div class="mini" style="margin top: 12px;">
+            <h2>Key months</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Net worth</th>
+                  <th>Passive income</th>
+                  <th>Freedom line</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="keyTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
